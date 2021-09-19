@@ -1,0 +1,18 @@
+mysql:
+  host: 192.168.1.4
+  port: 3306
+  user: root
+  pass: password
+  db: man10_lock
+
+prefix: "§6[§yMan10Lock§6]"
+
+placeAutoLock
+
+server: "man10"
+
+worlds:
+  enabled: true
+  maxLocksPerPlayer: 10
+  lockableBlockTypes:
+    - 'CHEST'

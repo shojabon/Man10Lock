@@ -1,0 +1,7 @@
+name: Man10Lock
+version: '${version}'
+main: com.shojabon.man10lock.Man10Lock
+api-version: 1.17
+authors: [ Sho0 ]
+commands:
+  mlock:
