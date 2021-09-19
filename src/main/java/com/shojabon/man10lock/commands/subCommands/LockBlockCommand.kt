@@ -1,7 +1,6 @@
 package com.shojabon.man10lock.commands.subCommands
 
 import com.shojabon.man10lock.Man10Lock
-import com.shojabon.man10lock.Utils.MySQL.ThreadedMySQLAPI
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -10,9 +9,8 @@ import org.bukkit.entity.Player
 import org.bukkit.event.*
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.event.player.PlayerMoveEvent
-import org.bukkit.event.player.PlayerToggleSneakEvent
 import java.util.*
+import java.util.function.Consumer
 import kotlin.collections.ArrayList
 
 class LockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listener {
@@ -41,11 +39,23 @@ class LockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listene
         if(e.action != Action.RIGHT_CLICK_BLOCK) return
         if(e.useInteractedBlock() == Event.Result.DENY) return
         if(!inLockBlockState.contains(e.player.uniqueId)) return
-        Bukkit.broadcastMessage("clicked!")
+        if(e.clickedBlock == null) return
 
-
+        val targetLockBlock = Man10Lock.api.getLockBlock(e.clickedBlock!!.location)
+        if(targetLockBlock != null){
+            e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはすでに保護されています")
+            return
+        }
 
         inLockBlockState.remove(e.player.uniqueId)
-        if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
+        Man10Lock.api.lockBlock(e.clickedBlock!!.location, e.player, Consumer {
+            if(!it){
+                e.player.sendMessage(Man10Lock.prefix + "§c§l内部エラーが発生しました")
+                 return@Consumer
+            }
+
+            if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
+            e.player.sendMessage(Man10Lock.prefix + "§a§lブロックをロックしました")
+        })
     }
 }

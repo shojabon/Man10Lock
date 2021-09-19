@@ -14,6 +14,7 @@ class Man10Lock : JavaPlugin() {
         lateinit var config : FileConfiguration
         lateinit var api: Man10LockAPI
         var prefix : String? = "§6[§yMan10Lock§6]"
+        var serverName: String? = ""
 
     }
 
@@ -25,6 +26,7 @@ class Man10Lock : JavaPlugin() {
         mysql = ThreadedMySQLAPI(this)
         api = Man10LockAPI()
         prefix = config.getString("prefix")
+        serverName = config.getString("server")
 
         server.pluginManager.registerEvents(Man10LockListeners(this), this)
         val commandRouter =  Man10LockCommandRouter(this)
