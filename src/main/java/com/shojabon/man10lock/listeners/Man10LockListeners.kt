@@ -2,14 +2,20 @@ package com.shojabon.man10lock.listeners
 
 import com.shojabon.man10lock.Man10Lock
 import com.shojabon.man10lock.Man10LockAPI
+import com.shojabon.man10lock.Utils.SItemStack
+import com.shojabon.man10lock.commands.subCommands.LockBlockCommand
+import com.shojabon.man10lock.enums.Man10LockPermission
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.Sign
 import org.bukkit.block.data.type.Door
 import org.bukkit.event.*
+import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPhysicsEvent
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.InventoryHolder
 import java.util.function.Consumer
@@ -102,6 +108,46 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
         if(b.blockData is Sign) return true
 
         return false
+    }
+
+    @EventHandler
+    fun onPlace(e: BlockPlaceEvent){
+        if(e.isCancelled) return
+        if(!e.canBuild()) return
+
+        val itemInHand = SItemStack(e.itemInHand)
+        if(itemInHand.lore.isEmpty() || !itemInHand.lore[0]!!.contentEquals("Man10Lock")){
+            return
+        }
+
+        val worldConfig = Man10LockAPI.worldConfigurations[e.block.location.world.name]
+        if(worldConfig == null){
+            e.isCancelled = true
+            e.player.sendMessage(Man10Lock.prefix + "§c§lこのワールドではロックできません")
+            return
+        }
+
+        if(!worldConfig.blockIsLockable(e.block)) {
+            e.isCancelled = true
+            e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックできません")
+            return
+        }
+
+
+        if(Man10Lock.api.getLockedBlockCountInWorld(e.player.uniqueId, e.player.world.name) >=  worldConfig.maxAllowedLocks && worldConfig.maxAllowedLocks != -1 && !e.player.hasPermission("man10lock.admin")){
+            e.player.sendMessage(Man10Lock.prefix + "§c§lこのワールドでは最大" + worldConfig.maxAllowedLocks + "個しかロックできません")
+            e.isCancelled = true
+            return
+        }
+
+
+        Man10Lock.api.lockBlock(e.block.location, e.player.name, e.player.uniqueId, Man10LockPermission.OWNER, Consumer {
+            if(!it){
+                e.player.sendMessage(Man10Lock.prefix + "§c§l内部エラーが発生しました")
+                return@Consumer
+            }
+            e.player.sendMessage(Man10Lock.prefix + "§a§lブロックをロックしました")
+        })
     }
 
 }
