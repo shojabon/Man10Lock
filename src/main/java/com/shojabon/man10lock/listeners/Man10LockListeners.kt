@@ -6,6 +6,7 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.Player
 import org.bukkit.event.*
 import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.player.PlayerInteractEvent
 
 class Man10LockListeners(val plugin: Man10Lock) : Listener {
@@ -18,6 +19,17 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
         if(targetLockBlock.userCanEdit(e.player.uniqueId)) return
 
         e.setUseInteractedBlock(Event.Result.DENY)
+        e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
+
+    }
+
+    @EventHandler
+    fun onBreak(e: BlockBreakEvent){
+        if(e.isCancelled) return
+        val targetLockBlock = Man10Lock.api.getLockBlock(e.block.location) ?: return
+        if(targetLockBlock.userCanEdit(e.player.uniqueId)) return
+
+        e.isCancelled = true
         e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
 
     }

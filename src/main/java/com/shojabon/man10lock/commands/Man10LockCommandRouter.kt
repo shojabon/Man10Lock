@@ -5,9 +5,7 @@ import com.shojabon.man10lock.Utils.SCommandRouter.SCommandArgument
 import com.shojabon.man10lock.Utils.SCommandRouter.SCommandArgumentType
 import com.shojabon.man10lock.Utils.SCommandRouter.SCommandObject
 import com.shojabon.man10lock.Utils.SCommandRouter.SCommandRouter
-import com.shojabon.man10lock.commands.subCommands.AddUserToLockBlockCommand
-import com.shojabon.man10lock.commands.subCommands.LockBlockCommand
-import com.shojabon.man10lock.commands.subCommands.ReloadCommand
+import com.shojabon.man10lock.commands.subCommands.*
 import org.bukkit.plugin.java.JavaPlugin
 
 class Man10LockCommandRouter (private val plugin: Man10Lock): SCommandRouter() {
@@ -44,6 +42,23 @@ class Man10LockCommandRouter (private val plugin: Man10Lock): SCommandRouter() {
                 .addArgument(SCommandArgument().addAlias("ユーザー名"))
                 .addRequiredPermission("man10lock.addUser")
                 .addExplanation("ロックされたブロックにユーザーを追加する").setExecutor(AddUserToLockBlockCommand(plugin))
+        )
+
+        //remove user
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("delUser"))
+                .addArgument(SCommandArgument().addAlias("ユーザー名"))
+                .addRequiredPermission("man10lock.delUser")
+                .addExplanation("ロックされたブロックからユーザーを削除する").setExecutor(RemoveUserFromLockBlockCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("info"))
+                .addRequiredPermission("man10lock.info")
+                .addExplanation("ロックされたブロックの情報を見る").setExecutor(LockBlockInfoCommand(plugin))
         )
     }
 }

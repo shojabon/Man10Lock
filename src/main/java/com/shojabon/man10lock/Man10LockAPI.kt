@@ -14,6 +14,7 @@ import org.bukkit.block.DoubleChest
 import org.bukkit.entity.Player
 import java.util.*
 import java.util.function.Consumer
+import javax.security.sasl.AuthorizeCallback
 
 class Man10LockAPI {
 
@@ -24,6 +25,7 @@ class Man10LockAPI {
 
     init {
         loadConfig()
+        loadAllLockedBlocks()
     }
 
     private fun loadConfig(){
@@ -49,12 +51,12 @@ class Man10LockAPI {
         }
     }
 
-    fun blockId(l: Location): String{
+    private fun blockId(l: Location): String{
         return l.world.name + "|" + l.blockX + "|" + l.blockY + "|" + l.blockZ
     }
 
     //util functions
-    fun splitDoubleChest(dChest: DoubleChest): Array<Chest> {
+    private fun splitDoubleChest(dChest: DoubleChest): Array<Chest> {
         return arrayOf(
             dChest.leftSide as Chest,
             dChest.rightSide as Chest
@@ -63,8 +65,7 @@ class Man10LockAPI {
 
     //main functions
 
-    fun getLockBlock(l: Location): Man10LockedBlock?{
-        val blockId = blockId(l)
+    fun getLockBlock(blockId: String): Man10LockedBlock?{
         if(lockedBlockData.containsKey(blockId)){
             return lockedBlockData[blockId]
         }
@@ -92,6 +93,10 @@ class Man10LockAPI {
         return lockedBlockData[blockId]
     }
 
+    fun getLockBlock(l: Location): Man10LockedBlock?{
+        return getLockBlock(blockId(l))
+    }
+
     fun lockBlock(l: Location, name: String, uuid: UUID, consumer: Consumer<Boolean>){
 
         if(l.block.type == Material.AIR){
@@ -105,7 +110,10 @@ class Man10LockAPI {
             lockBlockId = blockId(splitDoubleChest(dChest)[0].location)
         }
 
-        val lockBlockObject = Man10LockedBlock(lockBlockId)
+        var lockBlockObject = getLockBlock(l)
+        if(lockBlockObject == null){
+            lockBlockObject = Man10LockedBlock(lockBlockId)
+        }
         lockBlockObject.addUser(Man10LockUser(name, uuid, Man10LockPermission.OWNER))
 
 
@@ -127,6 +135,47 @@ class Man10LockAPI {
             consumer.accept(it)
         }
 
+    }
+
+    fun removeUserLock(l: Location, uuid: UUID, consumer: Consumer<Boolean>){
+        if(l.block.type == Material.AIR){
+            consumer.accept(false)
+            return
+        }
+
+        val lockedBlock = getLockBlock(l)
+        if(lockedBlock == null) {
+            consumer.accept(false)
+            return
+        }
+        if(!lockedBlock.userCanEdit(uuid)){
+            consumer.accept(false)
+            return
+        }
+
+        val lockBlockId = blockId(l)
+        Man10Lock.mysql.asyncExecute("DELETE FROM man10lock_blocks WHERE user_block_id = '$uuid|$lockBlockId'") {
+            if(!it) {
+                consumer.accept(it)
+                return@asyncExecute
+            }
+            lockedBlock.removeUser(uuid)
+            if(lockedBlock.permissionUsers.isEmpty()){
+                lockedBlockData.remove(lockBlockId)
+            }
+            consumer.accept(it)
+        }
+    }
+
+    //cache functions
+
+    fun loadAllLockedBlocks(){
+        Man10Lock.mysql.asyncQuery("SELECT block_id FROM man10lock_blocks WHERE server = '" + Man10Lock.serverName + "' GROUP BY block_id"
+        ) {
+            for (rs in it) {
+                getLockBlock(rs.getString("block_id"))
+            }
+        }
     }
 
 }

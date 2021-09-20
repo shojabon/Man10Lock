@@ -5,7 +5,7 @@ import kotlin.collections.HashMap
 
 class Man10LockedBlock (val blockId: String){
 
-    private val permissionUsers = HashMap<UUID, Man10LockUser>();
+    val permissionUsers = HashMap<UUID, Man10LockUser>();
 
     fun addUser(user: Man10LockUser){
         permissionUsers[user.uuid] = user;
@@ -14,5 +14,10 @@ class Man10LockedBlock (val blockId: String){
     fun userCanEdit(uuid: UUID): Boolean{
         return permissionUsers.containsKey(uuid)
     }
+
+    fun removeUser(uuid: UUID){
+        permissionUsers.remove(uuid)
+    }
+
 
 }
