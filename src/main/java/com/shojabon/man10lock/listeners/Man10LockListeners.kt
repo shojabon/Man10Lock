@@ -121,9 +121,7 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
         if(!e.canBuild()) return
 
         val itemInHand = SItemStack(e.itemInHand)
-        if(itemInHand.lore.isEmpty() || !itemInHand.lore[0]!!.contentEquals("Man10Lock")){
-            return
-        }
+        if(!itemInHand.displayName!!.contentEquals("§6§lロック樽") && !(itemInHand.lore.size >= 1 && itemInHand.lore[0]!!.contentEquals("Man10Lock"))) return
 
         val worldConfig = Man10LockAPI.worldConfigurations[e.block.location.world.name]
         if(worldConfig == null){

@@ -82,5 +82,6 @@ class Man10LockCommandRouter (private val plugin: Man10Lock): SCommandRouter() {
                 .addRequiredPermission("man10lock.admin")
                 .addExplanation("他人のがロックしているブロック一覧").setExecutor(ListLockedBlockInfoCommand(plugin))
         )
+
     }
 }
