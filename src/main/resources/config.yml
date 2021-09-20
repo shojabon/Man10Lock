@@ -7,13 +7,10 @@ mysql:
 
 prefix: "§6[§yMan10Lock§6]"
 
-placeAutoLock
-
 server: "man10"
 
 worlds:
   world:
-    enabled: true
     maxLocksPerPlayer: 10
     lockableBlockTypes:
       - 'CHEST'

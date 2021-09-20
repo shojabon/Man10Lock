@@ -29,11 +29,6 @@ class LockBlockInfoCommand(private val plugin: Man10Lock) : CommandExecutor, Lis
             return false
         }
 
-        if(!targetLockBlock.userCanEdit(p.uniqueId)){
-            p.sendMessage(Man10Lock.prefix + "§c§lあなたはこのブロックを編集することはできません")
-            return false
-        }
-
         p.sendMessage("§e§l========[編集可能な人]========")
         for(user in targetLockBlock.permissionUsers.values){
             p.sendMessage("§d§l" + user.name)

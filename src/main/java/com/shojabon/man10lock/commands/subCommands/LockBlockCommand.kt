@@ -2,6 +2,8 @@ package com.shojabon.man10lock.commands.subCommands
 
 import com.shojabon.man10lock.Man10Lock
 import com.shojabon.man10lock.Man10LockAPI
+import com.shojabon.man10lock.dataClass.Man10LockWorldConfig
+import com.shojabon.man10lock.enums.Man10LockPermission
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -27,8 +29,21 @@ class LockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listene
             p.sendMessage(Man10Lock.prefix + "§c§lロックしたいブロックを右クリックしてください")
             return false
         }
+        val worldConfig = Man10LockAPI.worldConfigurations[p.world.name]
+        if(worldConfig == null){
+            p.sendMessage(Man10Lock.prefix + "§c§lこのワールドではロックできません")
+            return false
+        }
+
+        if(Man10Lock.api.getLockedBlockCountInWorld(p.uniqueId, p.world.name) >=  worldConfig.maxAllowedLocks && worldConfig.maxAllowedLocks != -1){
+            inLockBlockState.remove(p.uniqueId)
+            if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
+            p.sendMessage(Man10Lock.prefix + "§c§lこのワールドでは最大" + worldConfig.maxAllowedLocks + "個しかロックできません")
+            return false
+        }
         //register listeners if fist person
         if(inLockBlockState.size == 0)Bukkit.getPluginManager().registerEvents(this, plugin)
+
 
         inLockBlockState.add(p.uniqueId)
         p.sendMessage(Man10Lock.prefix + "§c§lロックしたいブロックを右クリックしてください")
@@ -43,13 +58,16 @@ class LockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listene
         if(e.clickedBlock == null) return
 
         e.setUseInteractedBlock(Event.Result.DENY)
-        if(!Man10LockAPI.worldConfigurations.containsKey(e.clickedBlock!!.location.world.name)){
+
+        val worldConfig = Man10LockAPI.worldConfigurations[e.clickedBlock!!.location.world.name]
+        if(worldConfig == null){
             inLockBlockState.remove(e.player.uniqueId)
             if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
             e.player.sendMessage(Man10Lock.prefix + "§c§lこのワールドではロックできません")
             return
         }
-        if(!Man10LockAPI.worldConfigurations[e.clickedBlock!!.location.world.name]!!.blockIsLockable(e.clickedBlock!!)) {
+
+        if(!worldConfig.blockIsLockable(e.clickedBlock!!)) {
             inLockBlockState.remove(e.player.uniqueId)
             if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
             e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックできません")
@@ -65,9 +83,16 @@ class LockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listene
             return
         }
 
+        if(Man10Lock.api.getLockedBlockCountInWorld(e.player.uniqueId, e.player.world.name) >=  worldConfig.maxAllowedLocks && worldConfig.maxAllowedLocks != -1){
+            inLockBlockState.remove(e.player.uniqueId)
+            if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
+            e.player.sendMessage(Man10Lock.prefix + "§c§lこのワールドでは最大" + worldConfig.maxAllowedLocks + "個しかロックできません")
+            return
+        }
+
 
         inLockBlockState.remove(e.player.uniqueId)
-        Man10Lock.api.lockBlock(e.clickedBlock!!.location, e.player.name, e.player.uniqueId, Consumer {
+        Man10Lock.api.lockBlock(e.clickedBlock!!.location, e.player.name, e.player.uniqueId, Man10LockPermission.OWNER, Consumer {
             if(!it){
                 e.player.sendMessage(Man10Lock.prefix + "§c§l内部エラーが発生しました")
                  return@Consumer

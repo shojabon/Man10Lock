@@ -16,6 +16,8 @@ class Man10Lock : JavaPlugin() {
         var prefix : String? = "§6[§yMan10Lock§6]"
         var serverName: String? = ""
 
+        var loadingChests = false
+
     }
 
     override fun onEnable() {
@@ -24,9 +26,10 @@ class Man10Lock : JavaPlugin() {
         saveDefaultConfig()
         Man10Lock.config = config
         mysql = ThreadedMySQLAPI(this)
-        api = Man10LockAPI()
         prefix = config.getString("prefix")
         serverName = config.getString("server")
+
+        api = Man10LockAPI()
 
         server.pluginManager.registerEvents(Man10LockListeners(this), this)
         val commandRouter =  Man10LockCommandRouter(this)

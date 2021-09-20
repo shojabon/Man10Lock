@@ -2,7 +2,6 @@ package com.shojabon.man10lock.commands.subCommands
 
 import com.shojabon.man10lock.Man10Lock
 import com.shojabon.man10lock.Man10LockAPI
-import com.shojabon.man10lock.enums.Man10LockPermission
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -11,28 +10,13 @@ import org.bukkit.entity.Player
 import org.bukkit.event.*
 import java.util.function.Consumer
 
-class AddUserToLockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listener {
+class UnLockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listener {
 
 
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<String>): Boolean {
-        if(sender !is Player) return false
+        if(sender !is Player) return false;
         val p: Player = sender
 
-        val targetPlayer = Bukkit.getOfflinePlayerIfCached(args[1])
-        if(targetPlayer == null){
-            p.sendMessage(Man10Lock.prefix + "§c§lプレイヤーが存在しません")
-            return false
-        }
-
-        if(targetPlayer.name == null){
-            p.sendMessage(Man10Lock.prefix + "§c§lプレイヤーが存在しません")
-            return false
-        }
-
-        if(targetPlayer.uniqueId == p.uniqueId){
-            p.sendMessage(Man10Lock.prefix + "§c§l自分を追加することはできません")
-            return false
-        }
 
         if(!Man10LockAPI.worldConfigurations.containsKey(p.world.name)){
             p.sendMessage(Man10Lock.prefix + "§c§lこのワールドではロックできません")
@@ -57,13 +41,14 @@ class AddUserToLockBlockCommand(private val plugin: Man10Lock) : CommandExecutor
         }
 
 
-        Man10Lock.api.lockBlock(b.location, targetPlayer.name!!, targetPlayer.uniqueId, Man10LockPermission.MEMBER, Consumer {
+
+        Man10Lock.api.deleteLockBlock(b.location, Consumer {
             if(!it){
                 p.sendMessage(Man10Lock.prefix + "§c§l内部エラーが発生しました")
                 return@Consumer
             }
 
-            p.sendMessage(Man10Lock.prefix + "§a§lユーザーを追加しました")
+            p.sendMessage(Man10Lock.prefix + "§a§lロックを解除しました")
         })
 
         return true
