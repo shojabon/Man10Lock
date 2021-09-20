@@ -1,12 +1,16 @@
 package com.shojabon.man10lock
 
 import com.shojabon.man10lock.Utils.MySQL.MySQLAPI
+import com.shojabon.man10lock.commands.subCommands.LockBlockCommand
 import com.shojabon.man10lock.dataClass.Man10LockUser
 import com.shojabon.man10lock.dataClass.Man10LockWorldConfig
 import com.shojabon.man10lock.dataClass.Man10LockedBlock
 import com.shojabon.man10lock.enums.Man10LockPermission
+import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.block.Chest
+import org.bukkit.block.DoubleChest
 import org.bukkit.entity.Player
 import java.util.*
 import java.util.function.Consumer
@@ -49,12 +53,22 @@ class Man10LockAPI {
         return l.world.name + "|" + l.blockX + "|" + l.blockY + "|" + l.blockZ
     }
 
+    //util functions
+    fun splitDoubleChest(dChest: DoubleChest): Array<Chest> {
+        return arrayOf(
+            dChest.leftSide as Chest,
+            dChest.rightSide as Chest
+        )
+    }
+
+    //main functions
+
     fun getLockBlock(l: Location): Man10LockedBlock?{
         val blockId = blockId(l)
-        if(blockId in lockedBlockData){
+        if(lockedBlockData.containsKey(blockId)){
             return lockedBlockData[blockId]
         }
-        val result = Man10Lock.mysql.query("SELECT * FROM man10lock_blocks WHERE server = '" + Man10Lock.serverName + "' AND block_id = '" + blockId + " '")
+        val result = Man10Lock.mysql.query("SELECT * FROM man10lock_blocks WHERE server = '" + Man10Lock.serverName + "' AND block_id = '" + blockId + "'")
         if(result.size == 0){
             lockedBlockData[blockId] = null
             return null
@@ -65,49 +79,50 @@ class Man10LockAPI {
 
 
             //if second time just add user
-            if(blockId in lockedBlockData) {
+            if(lockedBlockData.containsKey(blockId)) {
                 lockedBlockData[blockId]?.addUser(user)
                 continue
             }
 
             lockedBlockData[blockId] = Man10LockedBlock(rs.getString("block_id"))
+            lockedBlockData[blockId]?.addUser(user)
 
 
         }
         return lockedBlockData[blockId]
     }
 
-    fun lockBlock(l: Location, player: Player, consumer: Consumer<Boolean>){
-
-        val targetLockBlock = getLockBlock(l)
-        if(targetLockBlock != null) {
-            consumer.accept(false)
-            return
-        }
+    fun lockBlock(l: Location, name: String, uuid: UUID, consumer: Consumer<Boolean>){
 
         if(l.block.type == Material.AIR){
             consumer.accept(false)
             return
         }
 
-        val lockBlockId = blockId(l)
+        var lockBlockId = blockId(l)
+        if(l.block.type == Material.CHEST && l.block.state is DoubleChest){
+            val dChest = l.block.state as DoubleChest
+            lockBlockId = blockId(splitDoubleChest(dChest)[0].location)
+        }
 
         val lockBlockObject = Man10LockedBlock(lockBlockId)
-        lockBlockObject.addUser(Man10LockUser(player.name, player.uniqueId, Man10LockPermission.OWNER))
+        lockBlockObject.addUser(Man10LockUser(name, uuid, Man10LockPermission.OWNER))
 
 
         val payload = HashMap<String, Any?>()
         payload["server"] = Man10Lock.serverName
         payload["block_id"] = lockBlockId
-        payload["user_block_id"] = player.uniqueId.toString() + "|" + lockBlockId
+        payload["user_block_id"] = "$uuid|$lockBlockId"
         payload["block_type"] = l.block.type.name
-        payload["name"] = player.name
-        payload["uuid"] = player.uniqueId
+        payload["name"] = name
+        payload["uuid"] = uuid
         payload["permission"] = Man10LockPermission.OWNER.name
 
-
         Man10Lock.mysql.asyncExecute(MySQLAPI.buildReplaceQuery(payload, "man10lock_blocks")) {
-            if(!it) return@asyncExecute
+            if(!it) {
+                consumer.accept(it)
+                return@asyncExecute
+            }
             lockedBlockData[lockBlockId] = lockBlockObject
             consumer.accept(it)
         }

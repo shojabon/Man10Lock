@@ -1,6 +1,7 @@
 package com.shojabon.man10lock.commands.subCommands
 
 import com.shojabon.man10lock.Man10Lock
+import com.shojabon.man10lock.Man10LockAPI
 import org.bukkit.Bukkit
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -41,14 +42,32 @@ class LockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listene
         if(!inLockBlockState.contains(e.player.uniqueId)) return
         if(e.clickedBlock == null) return
 
+        e.setUseInteractedBlock(Event.Result.DENY)
+        if(!Man10LockAPI.worldConfigurations.containsKey(e.clickedBlock!!.location.world.name)){
+            inLockBlockState.remove(e.player.uniqueId)
+            if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
+            e.player.sendMessage(Man10Lock.prefix + "§c§lこのワールドではロックできません")
+            return
+        }
+        if(!Man10LockAPI.worldConfigurations[e.clickedBlock!!.location.world.name]!!.blockIsLockable(e.clickedBlock!!)) {
+            inLockBlockState.remove(e.player.uniqueId)
+            if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
+            e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックできません")
+            return
+        }
+
+
         val targetLockBlock = Man10Lock.api.getLockBlock(e.clickedBlock!!.location)
         if(targetLockBlock != null){
+            inLockBlockState.remove(e.player.uniqueId)
+            if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
             e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはすでに保護されています")
             return
         }
 
+
         inLockBlockState.remove(e.player.uniqueId)
-        Man10Lock.api.lockBlock(e.clickedBlock!!.location, e.player, Consumer {
+        Man10Lock.api.lockBlock(e.clickedBlock!!.location, e.player.name, e.player.uniqueId, Consumer {
             if(!it){
                 e.player.sendMessage(Man10Lock.prefix + "§c§l内部エラーが発生しました")
                  return@Consumer

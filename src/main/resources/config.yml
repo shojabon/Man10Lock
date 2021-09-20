@@ -12,7 +12,8 @@ placeAutoLock
 server: "man10"
 
 worlds:
-  enabled: true
-  maxLocksPerPlayer: 10
-  lockableBlockTypes:
-    - 'CHEST'
+  world:
+    enabled: true
+    maxLocksPerPlayer: 10
+    lockableBlockTypes:
+      - 'CHEST'
