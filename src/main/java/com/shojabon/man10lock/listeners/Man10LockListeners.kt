@@ -3,7 +3,6 @@ package com.shojabon.man10lock.listeners
 import com.shojabon.man10lock.Man10Lock
 import com.shojabon.man10lock.Man10LockAPI
 import com.shojabon.man10lock.Utils.SItemStack
-import com.shojabon.man10lock.commands.subCommands.LockBlockCommand
 import com.shojabon.man10lock.enums.Man10LockPermission
 import org.bukkit.Bukkit
 import org.bukkit.Material
@@ -11,13 +10,10 @@ import org.bukkit.block.Block
 import org.bukkit.block.Sign
 import org.bukkit.block.data.type.Door
 import org.bukkit.event.*
-import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPhysicsEvent
 import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.InventoryHolder
 import java.util.function.Consumer
 
 class Man10LockListeners(val plugin: Man10Lock) : Listener {
@@ -88,6 +84,15 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
     fun onNaturalBreak(e: BlockPhysicsEvent){
         if(e.sourceBlock.type != Material.AIR) return
         if(!isInstanceOfBottomSupported(e.block)) return
+        if (e.block.location == e.sourceBlock.location) {
+            return
+        }
+        if(e.block.location.blockX != e.sourceBlock.location.blockX){
+            return
+        }
+        if(e.block.location.blockZ != e.sourceBlock.location.blockZ){
+            return
+        }
 
         if(e.isCancelled) return
         //boot loading
