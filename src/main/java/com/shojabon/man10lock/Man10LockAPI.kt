@@ -35,7 +35,7 @@ class Man10LockAPI {
         loadAllLockedBlocks()
     }
 
-    private fun loadConfig(){
+    fun loadConfig(){
         val keyList = Man10Lock.config.getConfigurationSection("worlds")?.getKeys(false) ?: return
         for(key in keyList){
             val allowedBlocks = Man10Lock.config.getStringList("worlds.$key.lockableBlockTypes")
