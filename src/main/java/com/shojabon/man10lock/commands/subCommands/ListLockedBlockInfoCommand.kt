@@ -17,17 +17,42 @@ class ListLockedBlockInfoCommand(private val plugin: Man10Lock) : CommandExecuto
         if(sender !is Player) return false;
         val p: Player = sender
 
+        var uuid = p.uniqueId
 
-        val blockIds = Man10LockAPI.ownerLockBlock[p.uniqueId]
+        if(args.size == 2){
+            val targetPlayer = Bukkit.getOfflinePlayerIfCached(args[1])
+            if(targetPlayer == null || !targetPlayer.name?.contentEquals(args[1])!!){
+                p.sendMessage(Man10Lock.prefix + "§c§lプレイヤーが存在しません")
+                return false
+            }
+            uuid = targetPlayer.uniqueId
+        }
+
+        val blockIds = Man10LockAPI.ownerLockBlock[uuid]
         if (blockIds == null || blockIds.size == 0) {
             p.sendMessage(Man10Lock.prefix + "§c§lロックされたブロックがありません")
             return false
         }
-        p.sendMessage("§e§l========[ロックされたブロック一覧]========")
+
+        val refinedBlockIds = ArrayList<String>()
+
         for(blockId in blockIds){
             val lockBlock = Man10Lock.api.getLockBlock(blockId)?: continue
+            lockBlock.getLocation()?: continue
+            if(!lockBlock.userIsOwner(uuid)) continue
+
+            refinedBlockIds.add(blockId)
+        }
+
+        if(refinedBlockIds.size == 0){
+            p.sendMessage(Man10Lock.prefix + "§c§lロックされたブロックがありません")
+            return false
+        }
+        if(args.size == 2) p.sendMessage("§e§l" + uuid + "の情報")
+        p.sendMessage("§e§l========[ロックされたブロック一覧]========")
+        for(blockId in refinedBlockIds){
+            val lockBlock = Man10Lock.api.getLockBlock(blockId)?: continue
             val location = lockBlock.getLocation()?: continue
-            if(!lockBlock.userIsOwner(p.uniqueId)) continue
 
 
             p.sendMessage("§d§l" + location.world.name + " " + location.blockX + " " + location.blockY + " " + location.blockZ)

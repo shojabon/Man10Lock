@@ -29,11 +29,6 @@ class AddUserToLockBlockCommand(private val plugin: Man10Lock) : CommandExecutor
             return false
         }
 
-        if(targetPlayer.uniqueId == p.uniqueId){
-            p.sendMessage(Man10Lock.prefix + "§c§l自分を追加することはできません")
-            return false
-        }
-
         if(!Man10LockAPI.worldConfigurations.containsKey(p.world.name)){
             p.sendMessage(Man10Lock.prefix + "§c§lこのワールドではロックできません")
             return false
@@ -53,6 +48,16 @@ class AddUserToLockBlockCommand(private val plugin: Man10Lock) : CommandExecutor
 
         if(!targetLockBlock.userIsOwner(p.uniqueId) && !p.hasPermission("man10lock.admin")){
             p.sendMessage(Man10Lock.prefix + "§c§lあなたはこのブロックを編集することはできません")
+            return false
+        }
+
+        if(targetPlayer.uniqueId == p.uniqueId){
+            p.sendMessage(Man10Lock.prefix + "§c§l自分を追加することはできません")
+            return false
+        }
+
+        if(targetLockBlock.userCanEdit(targetPlayer.uniqueId)){
+            p.sendMessage(Man10Lock.prefix + "§c§lプレイヤーはすでにブロックを編集することができます")
             return false
         }
 

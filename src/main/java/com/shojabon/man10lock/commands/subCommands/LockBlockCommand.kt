@@ -35,7 +35,7 @@ class LockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listene
             return false
         }
 
-        if(Man10Lock.api.getLockedBlockCountInWorld(p.uniqueId, p.world.name) >=  worldConfig.maxAllowedLocks && worldConfig.maxAllowedLocks != -1){
+        if(Man10Lock.api.getLockedBlockCountInWorld(p.uniqueId, p.world.name) >=  worldConfig.maxAllowedLocks && worldConfig.maxAllowedLocks != -1 && !p.hasPermission("man10lock.admin")){
             inLockBlockState.remove(p.uniqueId)
             if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
             p.sendMessage(Man10Lock.prefix + "§c§lこのワールドでは最大" + worldConfig.maxAllowedLocks + "個しかロックできません")
@@ -83,7 +83,7 @@ class LockBlockCommand(private val plugin: Man10Lock) : CommandExecutor, Listene
             return
         }
 
-        if(Man10Lock.api.getLockedBlockCountInWorld(e.player.uniqueId, e.player.world.name) >=  worldConfig.maxAllowedLocks && worldConfig.maxAllowedLocks != -1){
+        if(Man10Lock.api.getLockedBlockCountInWorld(e.player.uniqueId, e.player.world.name) >=  worldConfig.maxAllowedLocks && worldConfig.maxAllowedLocks != -1 && !e.player.hasPermission("man10lock.admin")){
             inLockBlockState.remove(e.player.uniqueId)
             if(inLockBlockState.size == 0) HandlerList.unregisterAll(this)
             e.player.sendMessage(Man10Lock.prefix + "§c§lこのワールドでは最大" + worldConfig.maxAllowedLocks + "個しかロックできません")

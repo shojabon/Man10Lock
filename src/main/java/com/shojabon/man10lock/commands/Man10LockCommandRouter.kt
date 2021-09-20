@@ -31,7 +31,7 @@ class Man10LockCommandRouter (private val plugin: Man10Lock): SCommandRouter() {
 
         addCommand(
             SCommandObject()
-                .addArgument(SCommandArgument().addAllowedString("lock")).addRequiredPermission("man10lock.lock")
+                .addRequiredPermission("man10lock.lock")
                 .addExplanation("ブロックをロックする").setExecutor(LockBlockCommand(plugin))
         )
 
@@ -73,6 +73,14 @@ class Man10LockCommandRouter (private val plugin: Man10Lock): SCommandRouter() {
                 .addArgument(SCommandArgument().addAllowedString("list"))
                 .addRequiredPermission("man10lock.list")
                 .addExplanation("自分がロックしているブロック一覧").setExecutor(ListLockedBlockInfoCommand(plugin))
+        )
+
+        addCommand(
+            SCommandObject()
+                .addArgument(SCommandArgument().addAllowedString("list"))
+                .addArgument(SCommandArgument().addAlias("プレイヤー名"))
+                .addRequiredPermission("man10lock.admin")
+                .addExplanation("他人のがロックしているブロック一覧").setExecutor(ListLockedBlockInfoCommand(plugin))
         )
     }
 }

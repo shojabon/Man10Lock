@@ -28,11 +28,6 @@ class RemoveUserFromLockBlockCommand(private val plugin: Man10Lock) : CommandExe
             return false
         }
 
-        if(targetPlayer.uniqueId == p.uniqueId){
-            p.sendMessage(Man10Lock.prefix + "§c§l自分を消去することはできません")
-            return false
-        }
-
         if(!Man10LockAPI.worldConfigurations.containsKey(p.world.name)){
             p.sendMessage(Man10Lock.prefix + "§c§lこのワールドではロックできません")
             return false
@@ -50,7 +45,12 @@ class RemoveUserFromLockBlockCommand(private val plugin: Man10Lock) : CommandExe
             return false
         }
 
-        if(!targetLockBlock.userIsOwner(p.uniqueId) && !p.hasPermission("man10lock.admin")){
+        if(targetPlayer.uniqueId == p.uniqueId && targetLockBlock.userIsOwner(targetPlayer.uniqueId)){
+            p.sendMessage(Man10Lock.prefix + "§c§l自分を消去することはできません")
+            return false
+        }
+
+        if(!targetLockBlock.userCanEdit(p.uniqueId) && !p.hasPermission("man10lock.admin")){
             p.sendMessage(Man10Lock.prefix + "§c§lあなたはこのブロックを編集することはできません")
             return false
         }
@@ -60,7 +60,7 @@ class RemoveUserFromLockBlockCommand(private val plugin: Man10Lock) : CommandExe
             return false
         }
 
-        if(!targetLockBlock.userIsOwner(targetPlayer.uniqueId)){
+        if(targetLockBlock.userIsOwner(targetPlayer.uniqueId)){
             p.sendMessage(Man10Lock.prefix + "§c§lオーナーを削除することはできません")
             return false
         }
