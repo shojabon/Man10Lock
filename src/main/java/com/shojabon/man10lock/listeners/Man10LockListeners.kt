@@ -196,9 +196,13 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
         if(remover !is Player) return
         remover = e.remover as Player
 
-        if(!lockBlock.userIsOwner(remover.uniqueId)){
+        if(!lockBlock.userIsOwner(remover.uniqueId)&& !remover.hasPermission("man10lock.admin")){
             remover.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
             return
+        }
+        //admin message
+        if(remover.hasPermission("man10lock.admin") && !lockBlock.userCanEdit(remover.uniqueId)){
+            remover.sendMessage(Man10Lock.prefix + "§c§l権限行使中")
         }
         e.isCancelled = false
         Man10Lock.api.deleteLockBlock(e.entity.location, Consumer {
@@ -226,9 +230,13 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
         Man10LockAPI.worldConfigurations[e.rightClicked.location.world.name] ?: return
         val lockBlock = Man10Lock.api.getLockBlock(e.rightClicked.location) ?: return
         e.isCancelled = true
-        if(!lockBlock.userIsOwner(e.player.uniqueId)){
+        if(!lockBlock.userIsOwner(e.player.uniqueId) && !e.player.hasPermission("man10lock.admin")){
             e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
             return
+        }
+        //admin message
+        if(e.player.hasPermission("man10lock.admin") && !lockBlock.userCanEdit(e.player.uniqueId)){
+            e.player.sendMessage(Man10Lock.prefix + "§c§l権限行使中")
         }
         e.isCancelled = false
     }
@@ -239,9 +247,17 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
         Man10LockAPI.worldConfigurations[e.entity.location.world.name] ?: return
         val lockBlock = Man10Lock.api.getLockBlock(e.entity.location) ?: return
         e.isCancelled = true
-        if(!lockBlock.userIsOwner(e.damager.uniqueId)){
-            e.damager.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
+        if(e.damager !is Player) return
+
+        val damager = e.damager as Player
+
+        if(!lockBlock.userIsOwner(damager.uniqueId)&& !damager.hasPermission("man10lock.admin")){
+            damager.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
             return
+        }
+        //admin message
+        if(damager.hasPermission("man10lock.admin") && !lockBlock.userCanEdit(damager.uniqueId)){
+            damager.sendMessage(Man10Lock.prefix + "§c§l権限行使中")
         }
         e.isCancelled = false
     }
