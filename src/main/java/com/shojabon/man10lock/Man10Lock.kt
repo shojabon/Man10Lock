@@ -1,8 +1,8 @@
 package com.shojabon.man10lock
 
-import com.shojabon.man10lock.Utils.MySQL.ThreadedMySQLAPI
 import com.shojabon.man10lock.commands.Man10LockCommandRouter
 import com.shojabon.man10lock.listeners.Man10LockListeners
+import com.shojabon.mcutils.Utils.MySQL.ThreadedMySQLAPI
 import org.bukkit.configuration.file.FileConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 

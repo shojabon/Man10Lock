@@ -8,4 +8,11 @@ class Man10LockWorldConfig (val worldName: String, val allowedBlocks: ArrayList<
     fun blockIsLockable(b: Block): Boolean {
         return allowedBlocks.contains(b.type)
     }
+
+    fun blockIsLockable(type: String): Boolean {
+        for(material in allowedBlocks){
+            if(material.name == type) return true
+        }
+        return false
+    }
 }

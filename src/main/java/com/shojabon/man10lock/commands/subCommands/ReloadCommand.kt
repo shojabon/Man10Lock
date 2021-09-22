@@ -3,7 +3,7 @@ package com.shojabon.man10lock.commands.subCommands
 import com.shojabon.man10lock.Man10Lock
 import com.shojabon.man10lock.Man10Lock.Companion.config
 import com.shojabon.man10lock.Man10LockAPI
-import com.shojabon.man10lock.Utils.MySQL.ThreadedMySQLAPI
+import com.shojabon.mcutils.Utils.MySQL.ThreadedMySQLAPI
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
 import org.bukkit.command.CommandSender

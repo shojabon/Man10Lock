@@ -2,17 +2,25 @@ package com.shojabon.man10lock.listeners
 
 import com.shojabon.man10lock.Man10Lock
 import com.shojabon.man10lock.Man10LockAPI
-import com.shojabon.man10lock.Utils.SItemStack
 import com.shojabon.man10lock.enums.Man10LockPermission
+import com.shojabon.mcutils.Utils.SItemStack
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.Sign
 import org.bukkit.block.data.type.Door
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
 import org.bukkit.event.*
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPhysicsEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.entity.EntityDamageByEntityEvent
+import org.bukkit.event.entity.EntityInteractEvent
+import org.bukkit.event.hanging.HangingBreakByEntityEvent
+import org.bukkit.event.hanging.HangingBreakEvent
+import org.bukkit.event.hanging.HangingPlaceEvent
+import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import java.util.function.Consumer
 
@@ -116,7 +124,7 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
     }
 
     @EventHandler
-    fun onPlace(e: BlockPlaceEvent){
+    fun onPlaceLockBlock(e: BlockPlaceEvent){
         if(e.isCancelled) return
         if(!e.canBuild()) return
 
@@ -151,6 +159,91 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
             }
             e.player.sendMessage(Man10Lock.prefix + "§a§lブロックをロックしました")
         })
+    }
+
+    //================
+    // item frame
+    //================
+
+    @EventHandler(ignoreCancelled = true)
+    fun blockPlacedOverItemFrameEvent(e: BlockPlaceEvent){
+        if(!e.canBuild()) return
+        Man10LockAPI.worldConfigurations[e.block.location.world.name] ?: return
+        if(Man10Lock.api.getLockBlock(e.block.location) == null) return
+        e.isCancelled = true
+        e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
+    }
+
+
+    @EventHandler(ignoreCancelled = true)
+    fun itemFramePlaceEvent(e: HangingPlaceEvent){
+        Man10LockAPI.worldConfigurations[e.entity.location.world.name] ?: return
+        if(Man10Lock.api.getLockBlock(e.entity.location) == null) return
+        e.isCancelled = true
+        if(e.player != null) e.player!!.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun itemFrameDestroyEvent(e: HangingBreakByEntityEvent){
+        if(e.entity.type != EntityType.ITEM_FRAME && e.entity.type != EntityType.GLOW_ITEM_FRAME) return
+        Man10LockAPI.worldConfigurations[e.entity.location.world.name] ?: return
+        val lockBlock = Man10Lock.api.getLockBlock(e.entity.location)?: return
+
+        e.isCancelled = true
+
+        if(e.remover == null)return
+        var remover = e.remover
+        if(remover !is Player) return
+        remover = e.remover as Player
+
+        if(!lockBlock.userIsOwner(remover.uniqueId)){
+            remover.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
+            return
+        }
+        e.isCancelled = false
+        Man10Lock.api.deleteLockBlock(e.entity.location, Consumer {
+            if(!it){
+                remover.sendMessage(Man10Lock.prefix + "§a§l内部エラーが発生しました")
+                return@Consumer
+            }
+            remover.sendMessage(Man10Lock.prefix + "§c§lロックが解除されました")
+
+        })
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun itemFrameDestroyOtherThanEntity(e:HangingBreakEvent){
+        if(e.cause == HangingBreakEvent.RemoveCause.ENTITY) return
+        if(e.entity.type != EntityType.ITEM_FRAME && e.entity.type != EntityType.GLOW_ITEM_FRAME) return
+        Man10LockAPI.worldConfigurations[e.entity.location.world.name] ?: return
+        Man10Lock.api.getLockBlock(e.entity.location) ?: return
+        e.isCancelled = true
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun itemFramePlaceItemEvent(e: PlayerInteractEntityEvent){
+        if(e.rightClicked.type != EntityType.ITEM_FRAME && e.rightClicked.type != EntityType.GLOW_ITEM_FRAME) return
+        Man10LockAPI.worldConfigurations[e.rightClicked.location.world.name] ?: return
+        val lockBlock = Man10Lock.api.getLockBlock(e.rightClicked.location) ?: return
+        e.isCancelled = true
+        if(!lockBlock.userIsOwner(e.player.uniqueId)){
+            e.player.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
+            return
+        }
+        e.isCancelled = false
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun itemFrameTouchEvent(e: EntityDamageByEntityEvent){
+        if(e.entity.type != EntityType.ITEM_FRAME && e.entity.type != EntityType.GLOW_ITEM_FRAME) return
+        Man10LockAPI.worldConfigurations[e.entity.location.world.name] ?: return
+        val lockBlock = Man10Lock.api.getLockBlock(e.entity.location) ?: return
+        e.isCancelled = true
+        if(!lockBlock.userIsOwner(e.damager.uniqueId)){
+            e.damager.sendMessage(Man10Lock.prefix + "§c§lこのブロックはロックされています")
+            return
+        }
+        e.isCancelled = false
     }
 
 }

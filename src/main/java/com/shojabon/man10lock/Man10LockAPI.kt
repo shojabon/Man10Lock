@@ -1,11 +1,11 @@
 package com.shojabon.man10lock
 
-import com.shojabon.man10lock.Utils.MySQL.MySQLAPI
 import com.shojabon.man10lock.commands.subCommands.LockBlockCommand
 import com.shojabon.man10lock.dataClass.Man10LockUser
 import com.shojabon.man10lock.dataClass.Man10LockWorldConfig
 import com.shojabon.man10lock.dataClass.Man10LockedBlock
 import com.shojabon.man10lock.enums.Man10LockPermission
+import com.shojabon.mcutils.Utils.MySQL.MySQLAPI
 import it.unimi.dsi.fastutil.Hash
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -135,11 +135,6 @@ class Man10LockAPI {
 
     fun lockBlock(l: Location, name: String, uuid: UUID, perm: Man10LockPermission, consumer: Consumer<Boolean>){
 
-        if(l.block.type == Material.AIR){
-            consumer.accept(false)
-            return
-        }
-
         var lockBlockId = blockId(l)
 
         var lockBlockObject = getLockBlock(l)
@@ -213,10 +208,6 @@ class Man10LockAPI {
     }
 
     fun deleteLockBlock(l: Location, consumer: Consumer<Boolean>){
-        if(l.block.type == Material.AIR){
-            consumer.accept(false)
-            return
-        }
 
         val lockedBlock = getLockBlock(l)
         if(lockedBlock == null) {

@@ -1,11 +1,10 @@
 package com.shojabon.man10lock.commands
 
 import com.shojabon.man10lock.Man10Lock
-import com.shojabon.man10lock.Utils.SCommandRouter.SCommandArgument
-import com.shojabon.man10lock.Utils.SCommandRouter.SCommandArgumentType
-import com.shojabon.man10lock.Utils.SCommandRouter.SCommandObject
-import com.shojabon.man10lock.Utils.SCommandRouter.SCommandRouter
 import com.shojabon.man10lock.commands.subCommands.*
+import com.shojabon.mcutils.Utils.SCommandRouter.SCommandArgument
+import com.shojabon.mcutils.Utils.SCommandRouter.SCommandObject
+import com.shojabon.mcutils.Utils.SCommandRouter.SCommandRouter
 import org.bukkit.plugin.java.JavaPlugin
 
 class Man10LockCommandRouter (private val plugin: Man10Lock): SCommandRouter() {
