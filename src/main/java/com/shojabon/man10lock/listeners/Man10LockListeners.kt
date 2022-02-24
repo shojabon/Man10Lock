@@ -20,6 +20,7 @@ import org.bukkit.event.entity.EntityInteractEvent
 import org.bukkit.event.hanging.HangingBreakByEntityEvent
 import org.bukkit.event.hanging.HangingBreakEvent
 import org.bukkit.event.hanging.HangingPlaceEvent
+import org.bukkit.event.inventory.InventoryMoveItemEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import java.util.function.Consumer
@@ -260,6 +261,14 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
             damager.sendMessage(Man10Lock.prefix + "§c§l権限行使中")
         }
         e.isCancelled = false
+    }
+
+    @EventHandler
+    fun hopperEvent(e: InventoryMoveItemEvent){
+        val sourceLocation = e.source.location ?: return
+        Man10LockAPI.worldConfigurations[sourceLocation.world?.name] ?: return
+        Man10Lock.api.getLockBlock(sourceLocation) ?: return
+        e.isCancelled = true
     }
 
 }
