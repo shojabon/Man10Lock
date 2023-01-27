@@ -124,7 +124,7 @@ class Man10LockListeners(val plugin: Man10Lock) : Listener {
         return false
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGH)
     fun onPlaceLockBlock(e: BlockPlaceEvent){
         if(e.isCancelled) return
         if(!e.canBuild()) return

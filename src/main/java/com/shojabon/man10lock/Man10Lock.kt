@@ -37,6 +37,8 @@ class Man10Lock : JavaPlugin() {
         commandRouter.pluginPrefix = prefix
         getCommand("mlock")?.setExecutor(commandRouter)
         getCommand("mlock")?.tabCompleter = commandRouter
+
+        deleteOverDueLocks()
     }
 
     override fun onDisable() {
@@ -60,5 +62,10 @@ class Man10Lock : JavaPlugin() {
                 "COLLATE='utf8mb4_0900_ai_ci'\n" +
                 "ENGINE=InnoDB\n" +
                 ";\n")
+    }
+
+    private fun deleteOverDueLocks(){
+        if(config.getInt("resetTime") == 0) return;
+        mysql.execute("DELETE FROM man10lock_blocks WHERE server = '" + config.getString("server") + "' UNIX_TIMESTAMP(NOW()) - UNIX_TIMESTAMP(date_time) >= " + config.getInt("resetTime"))
     }
 }

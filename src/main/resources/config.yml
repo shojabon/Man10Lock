@@ -14,3 +14,5 @@ worlds:
     maxLocksPerPlayer: 10
     lockableBlockTypes:
       - 'CHEST'
+
+resetTime: 324000
